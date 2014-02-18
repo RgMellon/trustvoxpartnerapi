@@ -1,0 +1,473 @@
+FORMAT: 1A
+
+# Trustvox API
+
+Esta é a documentação da API para parceiros do Trustvox. Ela está organizada de acordo com os recursos disponbilizados. Por exemplo, para criar uma Conta no Trustvox, vá até o Nova Conta. 
+
+Os recursos desta API, contém em sí as URLs para recursos relacionados. Por exemplo, o recurso abaixo representa uma Loja Criada:
+
+```js
+{ 
+    "id": 12,
+    "name": "Submarino",
+    "url": "http://submarino.com",
+    "links": 
+    [
+        { "rel": "self", "href": "http://trustvox.com.br/api/accounts/12" },
+        { "rel": "memberships", "href": "http://trustvox.com.br/api/stores/1/memberships" },
+        { "rel": "dashboard_permalink", "href": "http://trustvox.com.br/lojas/1" },
+    ]
+}
+```
+
+Note que há um atributo chamado `links`. Este atributo contém uma lista de URLs com os possíveis próximos passos que um cliente da API deve dar após visualizar uma Loja. Por exemplo, é possível listar todos os membros da mesma através do item cujo atributo `rel` é `memberships`. 
+
+# Group Recursos relacionando a Conta no Trustvox
+
+## Conta Existente [/api/accounts/{id}]
+
+
+O recurso Conta Criada representa a junção de uma loja e o usuário associado a ela. 
+**Atributos:**
+
+- id: identificador único da loja
+- name: nome da loja
+- url: URL, com protocolo, da loja
+- photo: URL, com protocolo, do logotipo da loja
+- plan: plano da conta (pode ser `essencial`, `plus` ou `premium`). Para mais informação visite [o nosso site](http://site.trustvox.com.br/planos/).
+- user:
+        - id: identificador único do usuário
+        - name: nome completo do usuário
+        - email: email (validado) do usuário
+
++ Headers
+    
+            Authorization: partnerToken 1234hjjh23333
+
++ Model (application/vnd.trustvox.com+json; version=2)
+    
+            { 
+                "id": 12,
+                "name": "Submarino",
+                "url": "http://submarino.com",
+                "plan": "premium",
+                "user": { 
+                    "id": 1, "name": "Guilherme Cavalcanti", "email": "guilhermec@redu.com.br"
+                },
+                "links": 
+                [
+                    { "rel": "self", "href": "http://trustvox.com.br/api/accounts/12" },
+                    { "rel": "memberships", "href": "http://trustvox.com.br/api/stores/1/memberships" },
+                    { "rel": "store", "href": "http://trustvox.com.br/api/stores/1" },
+                ]
+            }
++ Parameters
+    + id (string) ... ID da Conta, que é igual ao da Loja
+
+### GET
+
+Visualização da Loja
+
++ Response 200
+
+   [Conta Existente][]
+
+### DELETE
+
+Remove a conta, incluindo sua loja e membros.
+
++ Response 204
+
+## Nova Conta [/api/accounts]
+
+Recurso que representa uma conta a ser criada.
+
+**Atributos obrigatórios**:
+
+- url
+- user:
+    - name
+    - mail
+
+**Atributos opcionais**:
+
+- name
+- plan: plano da conta (se não especificado, será `trial`)
+- photo
+- cnpj: CNPJ da Loja
+
++ Headers
+    
+            Authorization: partnerToken 1234hjjh23333
+
++ Model (application/vnd.trustvox.com+json; version=2)
+    
+            { 
+                
+                "name": "Submarino",
+                "url": "http://submarino.com",
+                "user": {
+                    "name": "Guilherme Cavalcanti", "email": "guilhermec@redu.com.br" 
+                }
+            }
+
+### POST 
+
+Cria uma Conta e adicionar Membro ao mesmo tempo. Este recurso torna possível criar uma loja e associar um usuário administrador em uma ação única.
+
++ Request
+    [Nova Conta][]
+
++ Response 201
+    [Conta Existente][]
+
++ Response 422 (inválido)
+
+        { "name": ["É obrigatório"], "user": { "email" : ["É obrigatório"] }
+
+# Group Token do Usuario
+
+## Token Existente [/api/tokens/{id}]
+
++ Model (application/vnd.trustvox.com+json; version=2)
+
+            { 
+                "token": "asjhdjasdh12",
+                "expires_at: "2014-02-02T14:26:40+00:00"
+            }
+
+## Novo Token [/api/tokens]
+
+Gera token efêmero para a logar o usuário.
+
+**Atributos**:
+
+- user_id: id do usuário 
+- token: chave para logar o usuário
+- expires_at: data na qual o token expira
+
++ Headers
+    
+            Authorization: partnerToken 1234hjjh23333
+
++ Model (application/vnd.trustvox.com+json; version=2)
+
+            { 
+                "user_id"     : 1
+            }
+
+### POST
+
++ Request
+
+    [Novo Token][]
+
++ Response 201
+
+    [Token Existente][]
+    
+# Group Recursos relacionados a Loja
+
+O recurso Store representa a junção de um e-commerce.
+
+**Atributos:**
+
+- id: identificador único da loja
+- name: nome da loja
+- url: URL, com protocolo, da loja
+- photo: URL, com protocolo, do logotipo da loja
+
+## Loja Existente [/api/stores/{id}]
+
++ Parameters
+    + id (string) ... identificador único da loja
+
++ Headers
+    
+            Authorization: partnerToken 1234hjjh23333
+
++ Model (application/vnd.trustvox.com+json; version=2)
+    
+            { 
+                "id": 12,
+                "name": "Submarino",
+                "url": "http://submarino.com",
+                "cnpj": "12.359.885/0001-07",
+                "plan": "premium",
+                "links": 
+                [
+                    { "rel": "self", "href": "http://trustvox.com.br/api/stores/12" },
+                    { "rel": "memberships", "href": "http://trustvox.com.br/api/stores/12/memberships" },
+                ]
+            }
+
+### GET
+
++ Response 200
+    [Loja Existente][]
+
+### PATCH
+
++ Request 
+
+        {    
+            "name": "Submarino Amarelo",
+            "url": "http://submarino.com",
+            "cnpj": "12.359.885/0001-07",
+            "plan": "premium"
+        }
+
++ Response 200
+
+    [Loja Existente][]
+
+### DELETE
+
++ Response 204
+
+## Loja Nova [/api/stores]
+
+Recurso que representa uma loja e-commerce que ainda não existe no Trustvox.
+
+**Atributos obrigatórios**:
+- url
+
+**Atributos**:
+- name
+- photo
+- plan: plano da conta (pode ser `essencial`, `plus` ou `premium`). Para mais informação visite [o nosso site](http://site.trustvox.com.br/planos/).
+
+
++ Headers
+    
+            Authorization: partnerToken 1234hjjh23333
+
++ Model (application/vnd.trustvox.com+json; version=2)
+    
+            { 
+                "name": "Submarino",
+                "url": "http://submarino.com",
+                "cnpj": "12.359.885/0001-07",
+            }
+
+### POST
+
++ Request
+    [Loja Nova][]
+
++ Response 201
+    [Loja Existente][]
+
++ Response 422
+
+        { "url": ["não pode ficar em branco ou não é válido"] }
+
+# Group Recursos relacionados aos membros da Loja
+
+## Membro Existente [/api/memberships/{id}]
+
+Este recurso representa a associação de um usuário a um loja. Através dele é possível saber qual papel (`role`) um usuário tem dentro da loja.
+
+Os possíveis papéis são:
+
+- `agent`: atendente responsável por responder as perguntas realizadas no Widget do Trustvox.
+- `store_admin`: além de responder perguntas pode convidar novos administradores ou atendentes.
+
+**Atributos**:
+
+- role: pode ser `store_admin` ou `agent`
+- name: nome do usuário
+- email: email do usuário
+
++ Headers
+    
+            Authorization: partnerToken 1234hjjh23333
+
++ Model (application/vnd.trustvox.com+json; version=2)
+    
+        { 
+            "id": 12, 
+            "name": "Guilherme Cavalcanti", 
+            "email": "guilhermec@redu.com.br", 
+            "role": "store_admin",
+            "links": 
+            [
+                { "rel": "self", "href": "http://trustvox.com.br/api/memberships/12" },
+                { "rel": "store", "href": "http://trustvox.com.br/api/stores/1" },
+                { "rel": "user", "href": "http://trustvox.com.br/api/users/1" },
+            ]
+        }
+
++ Parameters
+    + id (string) ... Identificador do membro na loja
+
+### GET
+
+Visualiza papel do usuário na Loja.
+
++ Response 200
+
+    [Membro Existente][]
+
+### DELETE
+
+Remove o usuário de uma Loja.
+
++ Response 200
+
+
+### PATCH
+
+Muda o papel (`role`) do usuário numa loja. Este endpoint aceita apenas a opção `role`.
+
++ Request 
+
+        { 
+            "name": "Guilherme Cavalcanti", 
+            "email": "guilhermec@redu.com.br", 
+            "role": "store_admin"
+        }
+
++ Response 200
+
+    [Membro Existente][]
+
+## Novo Membro [/api/stores/{store_id}/memberships]
+
+Este recurso torna possível adicionar atendentes ou administradores a Loja.
+
+**Atributos obrigatórios**:
+
+- name: nome completo do usuário
+- email:  email valido do usuário
+- role: papél do usuário na loja (`store_admin` ou `agent`)
+
++ Parameters
+
+    + store_id (string) ... Identificador da Loja
+
++ Headers
+    
+            Authorization: partnerToken 1234hjjh23333
+
++ Model (application/vnd.trustvox.com+json; version=2)
+    
+        { 
+            "name": "Guilherme Cavalcanti", 
+            "email": "guilhermec@redu.com.br", 
+            "role": "store_admin",
+        }
+
+    
+### POST
+
+Adiciona novo membro a uma loja
+
++ Request
+
+    [Novo Membro][]
+
++ Response 201
+
+    [Membro Existente][]
+
+## Lista de Membros [/api/stores/{id}/memberships]
+
++ Parameters
+
+    + id (string) ... Identificador da Loja
+
++ Headers
+    
+            Authorization: partnerToken 1234hjjh23333
+
++ Model (application/vnd.trustvox.com+json; version=2)
+    
+        {   "total": 1,
+            "items":
+            [ 
+                { "id", 1, "name": "Guilherme Cavalcanti", "email": "guilhermec@redu.com.br", "role": "store_admin" }
+            ]
+        }
+
+## GET
+
++ Response 200
+    [Lista de Membros][]
+
+# Group Recursos relacionados ao usuario
+
+## Usuario Existente [/api/users/{id}]
+
+Um usuario já cadastrado no Trustvox.
+
+**Atributos**:
+
+- id: identificador único do usuário
+- first_name: primeiro nome do usuário
+- last_name: sobrenome do usuário
+- email: email do usuário
+
++ Model (application/vnd.trustvox.com+json; version=2)
+
+            { 
+                "id": 1, 
+                "first_name": "Guilherme",
+                "last_name":  "Cavalcanti",
+                "email": "guilhermec@redu.com.br",
+                "links"
+                [
+                    { "rel": "self", "href": "http://trustvox.com.br/api/users/1" },
+                ]
+            }
+
+### GET
+
+Visualiza um usuário cadastrado.
+
++ Response 200
+    [Usuario Existente][]
+
+### PATCH
+
+Atualiza dados de um usuário
+
++ Request
+
+        { "first_name": "Guilherme" }
+
++ Response 204
+
+### DELETE
+
+Remove um usuário e, por consequência, todas suas lojas.
+
++ Response 204
+
+## Novo Usuario [/api/users]
+
+Responsável pela criação de novos usuários.
+
+**Atributos**:
+
+- first_name: primeiro nome do usuário
+- last_name: sobrenome do usuário
+- email: email do usuário
+
++ Model (application/vnd.trustvox.com+json; version=2)
+
+            { 
+                "first_name": "Guilherme",
+                "last_name":  "Cavalcanti",
+                "email": "guilhermec@redu.com.br",
+            }
+
+### PUT
+
+Cadastra um novo usuário no Trustvox
+
++ Request
+    [Novo Usuario][]
+
++ Response 200
+    [Usuario Existente][]
